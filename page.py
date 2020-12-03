@@ -1,7 +1,7 @@
 import enum
 import random
 import math
-from potion import Potion
+from potion import Potion, Color
 
 
 class SpellType(enum.Enum):
@@ -12,16 +12,27 @@ class SpellType(enum.Enum):
 
 
 class Page:
-    # Attack = dmg value
-    # Modifier = modifier value for dmg/defense value
-    # Defense = defense value
-    def __init__(self, st=None):
+    # st = spell type
+    # t = title
+    # desc = description
+    # val = an option to set value of page on creation
+    # pot = an option to set cost of a page on creation
+    # pot_amt = amount of potions to make this page cost
+
+    def __init__(self, st=None, base=False, t="", desc="", val=None, pot=None, pot_amt=1):
         self.value = 0
         self.cost = {}
+        self.title = t
+        self.description = desc
         if not st:
             st = random.choice(list(SpellType))
         self.__spell_type = st
-        self.roll_value()
+        if base:
+            v = 1 if not val else val
+            self.set_value(v)
+            self.add_cost_value(pot, amt=pot_amt) if pot else self.roll_cost_value()
+        else:
+            self.roll_value()
         self.page = eval(self.__spell_type.name)()
 
     def get_spell_type(self):
@@ -50,6 +61,13 @@ class Page:
 
     def set_value(self, v):
         self.value = v
+
+    def add_cost_value(self, pot: Potion, amt=1):
+        for i in range(amt):
+            if pot.color.name not in self.cost:
+                self.cost.update({pot.color.name: [pot]})
+            else:
+                self.cost[pot.color.name].append(pot)
 
     def roll_cost_value(self, amt=1):
         self.cost.clear()
